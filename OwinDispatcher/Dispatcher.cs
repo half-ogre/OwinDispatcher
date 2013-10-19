@@ -34,6 +34,17 @@ namespace OwinDispatcher
             return new Regex(String.Concat("^", urlPattern, "$"));
         }
 
+        public void Delete(
+            string urlPattern,
+            Func<IDictionary<string, object>, Func<IDictionary<string, object>, Task>, Task> handler)
+        {
+            AddHandler(
+                "DELETE",
+                new Tuple<Regex, Func<IDictionary<string, object>, Func<IDictionary<string, object>, Task>, Task>>(
+                    CreateRegexForUrlPattern(urlPattern),
+                    handler));
+        }
+
         void EnsureHandlersHaveMethodKey(string method)
         {
             var key = method.ToLowerInvariant();
@@ -80,12 +91,34 @@ namespace OwinDispatcher
             return handler(environment, _next);
         }
 
+        public void Patch(
+            string urlPattern,
+            Func<IDictionary<string, object>, Func<IDictionary<string, object>, Task>, Task> handler)
+        {
+            AddHandler(
+                "PATCH",
+                new Tuple<Regex, Func<IDictionary<string, object>, Func<IDictionary<string, object>, Task>, Task>>(
+                    CreateRegexForUrlPattern(urlPattern),
+                    handler));
+        }
+
         public void Post(
             string urlPattern,
             Func<IDictionary<string, object>, Func<IDictionary<string, object>, Task>, Task> handler)
         {
             AddHandler(
                 "POST",
+                new Tuple<Regex, Func<IDictionary<string, object>, Func<IDictionary<string, object>, Task>, Task>>(
+                    CreateRegexForUrlPattern(urlPattern),
+                    handler));
+        }
+
+        public void Put(
+            string urlPattern,
+            Func<IDictionary<string, object>, Func<IDictionary<string, object>, Task>, Task> handler)
+        {
+            AddHandler(
+                "PUT",
                 new Tuple<Regex, Func<IDictionary<string, object>, Func<IDictionary<string, object>, Task>, Task>>(
                     CreateRegexForUrlPattern(urlPattern),
                     handler));
