@@ -62,13 +62,27 @@ app.UseDispatcher(dispatcher =>
 });
 ```
 
+## URL Patterns
+
+You may use a URL pattern instead of a static URL when registering a handler function. To do so, insert a token name surrounded by curly braces in the URL segment you want to capture by name. For example:
+
+```
+dispatcher.Get("/users/{id}", (environment, @params, next) =>
+{
+  var user = Users.find(@params.id);
+  // ... build the response
+});
+```
+
 ## The Handler Function
 
 A handler fucntion's type is: `Func<IDictionary<string, object>,, Func<IDictionary<string, object>, Task>, Task>`. 
 
 The first argumenent, `IDictionary<string, object>`, is the [OWIN environment](http://owin.org/spec/owin-1.0.0.html#_3.2._Environment) for the current request.
 
-The second argument, `Func<IDictionary<string, object>, Task>` is a function that returns a `Task` for the next OWIN app or middleware. You can invoke this and return that task to pass execution to the next OWIN app or middleware (see example below).
+The second argument, `dynamic`, is a dynamic object with a property for each token in the [URL pattern](#url-patterns). For example. the URL pattern `/users/{id}` would have a dynamic object with an `id` property.
+
+The third argument, `Func<IDictionary<string, object>, Task>` is a function that returns a `Task` for the next OWIN app or middleware. You can invoke this and return that task to pass execution to the next OWIN app or middleware (see example below).
 
 The handler function must return a `Task`. This task must eventually be completed. When writing to the response body's stream, it is common to return the task from an invocation of `environment["owin.ResponseBody"].WriteAsync(...)`. See the OWIN specification section about the [response body](http://owin.org/spec/owin-1.0.0.html#_3.5._Response_Body) for more information.
 
