@@ -79,5 +79,16 @@ namespace OwinDispatcher
 
             return handler(environment, _next);
         }
+
+        public void Post(
+            string urlPattern,
+            Func<IDictionary<string, object>, Func<IDictionary<string, object>, Task>, Task> handler)
+        {
+            AddHandler(
+                "POST",
+                new Tuple<Regex, Func<IDictionary<string, object>, Func<IDictionary<string, object>, Task>, Task>>(
+                    CreateRegexForUrlPattern(urlPattern),
+                    handler));
+        }
     }
 }
