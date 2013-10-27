@@ -85,9 +85,15 @@ namespace TestWebApp
                     if (!int.TryParse(@params.id, out id))
                     {
                         response.StatusCode = 404;
-                        return Task.FromResult((object)null);
+                        return response.WriteAsync("Not found.");
                     }
 
+                    if (!_things.ContainsKey(id))
+                    {
+                        response.StatusCode = 404;
+                        return response.WriteAsync("Not found.");
+                    }
+                    
                     var thing = _things[id];
 
                     response.StatusCode = 200;
