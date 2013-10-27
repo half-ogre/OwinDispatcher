@@ -25,7 +25,7 @@ namespace TestWebApp
             app.UseDispatcher(dispatcher =>
             {
                 // list all the things:
-                dispatcher.Get("/things", (environment, @params, next) =>
+                dispatcher.Get("/things", (environment, next) =>
                 {
                     var response = new OwinResponse(environment)
                     {
@@ -47,7 +47,7 @@ namespace TestWebApp
                 });
 
                 // create a new thing:
-                dispatcher.Post("/things", async (environment, @params, next) =>
+                dispatcher.Post("/things", async (environment, next) =>
                 {
                     var request = new OwinRequest(environment);
                     var form = await request.ReadFormAsync();

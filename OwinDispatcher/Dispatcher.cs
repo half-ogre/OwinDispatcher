@@ -40,6 +40,13 @@ namespace OwinDispatcher
 
         public void Delete(
             string urlPattern,
+            Func<IDictionary<string, object>, Func<IDictionary<string, object>, Task>, Task> handler)
+        {
+            Delete(urlPattern, (environment, @params, next) => handler(environment, next));
+        }
+
+        public void Delete(
+            string urlPattern,
             Func<IDictionary<string, object>, dynamic, Func<IDictionary<string, object>, Task>, Task> handler)
         {
             AddHandler(
@@ -85,6 +92,13 @@ namespace OwinDispatcher
 
         public void Get(
             string urlPattern,
+            Func<IDictionary<string, object>, Func<IDictionary<string, object>, Task>, Task> handler)
+        {
+            Get(urlPattern, (environment, @params, next) => handler(environment, next));
+        }
+        
+        public void Get(
+            string urlPattern,
             Func<IDictionary<string, object>, dynamic, Func<IDictionary<string, object>, Task>, Task> handler)
         {
             AddHandler(
@@ -108,6 +122,13 @@ namespace OwinDispatcher
 
         public void Patch(
             string urlPattern,
+            Func<IDictionary<string, object>, Func<IDictionary<string, object>, Task>, Task> handler)
+        {
+            Patch(urlPattern, (environment, @params, next) => handler(environment, next));
+        }
+
+        public void Patch(
+            string urlPattern,
             Func<IDictionary<string, object>, dynamic, Func<IDictionary<string, object>, Task>, Task> handler)
         {
             AddHandler(
@@ -119,6 +140,13 @@ namespace OwinDispatcher
 
         public void Post(
             string urlPattern,
+            Func<IDictionary<string, object>, Func<IDictionary<string, object>, Task>, Task> handler)
+        {
+            Post(urlPattern, (environment, @params, next) => handler(environment, next));
+        }
+
+        public void Post(
+            string urlPattern,
             Func<IDictionary<string, object>, dynamic, Func<IDictionary<string, object>, Task>, Task> handler)
         {
             AddHandler(
@@ -126,6 +154,13 @@ namespace OwinDispatcher
                 new Tuple<Regex, Func<IDictionary<string, object>, dynamic, Func<IDictionary<string, object>, Task>, Task>>(
                     CreateRegexForUrlPattern(urlPattern),
                     handler));
+        }
+
+        public void Put(
+            string urlPattern,
+            Func<IDictionary<string, object>, Func<IDictionary<string, object>, Task>, Task> handler)
+        {
+            Put(urlPattern, (environment, @params, next) => handler(environment, next));
         }
 
         public void Put(
