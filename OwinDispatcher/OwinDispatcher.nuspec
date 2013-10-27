@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>$id$</id>
+    <version>$version$</version>
+    <title>$title$</title>
+    <authors>$author$</authors>
+    <licenseUrl>https://github.com/half-ogre/OwinDispatcher/blob/master/LICENSE</licenseUrl>
+    <projectUrl>https://github.com/half-ogre/owindispatcher</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>A simple OWIN middleware that dispatches requests by associating URL patterns to handler functions.</description>
+  </metadata>
+</package>
