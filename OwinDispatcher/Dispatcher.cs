@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -10,17 +11,18 @@ namespace OwinDispatcher
     public class Dispatcher
     {
         private readonly Func<IDictionary<string, object>, Task> _next;
-        readonly IDictionary<string, List<Tuple<Regex, Func<IDictionary<string, object>, Func<IDictionary<string, object>, Task>, Task>>>> _handlers;
+        readonly IDictionary<string, List<Tuple<Regex, Func<IDictionary<string, object>, Func<IDictionary<string, object>, Task>, dynamic, Task>>>> _handlers;
+        static readonly Regex _tokenRegex = new Regex(@"\{([a-z]+)\}", RegexOptions.IgnoreCase);
 
         public Dispatcher(Func<IDictionary<string, object>, Task> next, Action<Dispatcher> dispatch)
         {
             _next = next;
-            _handlers = new Dictionary<string, List<Tuple<Regex, Func<IDictionary<string, object>, Func<IDictionary<string, object>, Task>, Task>>>>();
+            _handlers = new Dictionary<string, List<Tuple<Regex, Func<IDictionary<string, object>, Func<IDictionary<string, object>, Task>, dynamic, Task>>>>();
 
             dispatch(this);
         }
 
-        private void AddHandler(string method, Tuple<Regex, Func<IDictionary<string, object>, Func<IDictionary<string, object>, Task>, Task>> handler)
+        private void AddHandler(string method, Tuple<Regex, Func<IDictionary<string, object>, Func<IDictionary<string, object>, Task>, dynamic, Task>> handler)
         {
             var key = method.ToLowerInvariant();
 
@@ -31,16 +33,18 @@ namespace OwinDispatcher
 
         static Regex CreateRegexForUrlPattern(string urlPattern)
         {
-            return new Regex(String.Concat("^", urlPattern, "$"));
+            var regexString = _tokenRegex.Replace(urlPattern, @"(?<$1>[^/]+)");
+
+            return new Regex(String.Concat("^", regexString, "$"));
         }
 
         public void Delete(
             string urlPattern,
-            Func<IDictionary<string, object>, Func<IDictionary<string, object>, Task>, Task> handler)
+            Func<IDictionary<string, object>, Func<IDictionary<string, object>, Task>, dynamic, Task> handler)
         {
             AddHandler(
                 "DELETE",
-                new Tuple<Regex, Func<IDictionary<string, object>, Func<IDictionary<string, object>, Task>, Task>>(
+                new Tuple<Regex, Func<IDictionary<string, object>, Func<IDictionary<string, object>, Task>, dynamic, Task>>(
                     CreateRegexForUrlPattern(urlPattern),
                     handler));
         }
@@ -50,7 +54,7 @@ namespace OwinDispatcher
             var key = method.ToLowerInvariant();
 
             if (!_handlers.ContainsKey(key))
-                _handlers.Add(key, new List<Tuple<Regex, Func<IDictionary<string, object>, Func<IDictionary<string, object>, Task>, Task>>>());
+                _handlers.Add(key, new List<Tuple<Regex, Func<IDictionary<string, object>, Func<IDictionary<string, object>, Task>, dynamic, Task>>>());
         }
 
         Func<IDictionary<string, object>, Func<IDictionary<string, object>, Task>, Task> FindHandler(string method, string path)
@@ -59,22 +63,33 @@ namespace OwinDispatcher
             
             EnsureHandlersHaveMethodKey(key);
 
-            var match = _handlers[key]
-                .FirstOrDefault(x => x.Item1.IsMatch(path));
+            var @params = new ExpandoObject() as IDictionary<string, object>;
 
-            if (match == null)
+            Match matches = null;
+
+            var matchingHandler = _handlers[key]
+                .FirstOrDefault(x =>
+                {
+                    matches = x.Item1.Match(path);
+                    return matches.Success;
+                });
+
+            if (matchingHandler == null)
                 return null;
 
-            return match.Item2;
+            foreach (var groupName in matchingHandler.Item1.GetGroupNames())
+                @params.Add(groupName, matches.Groups[groupName].Value);
+
+            return (environement, next) => matchingHandler.Item2(environement, next, @params);
         }
 
         public void Get(
             string urlPattern,
-            Func<IDictionary<string, object>, Func<IDictionary<string, object>, Task>, Task> handler)
+            Func<IDictionary<string, object>, Func<IDictionary<string, object>, Task>, dynamic, Task> handler)
         {
             AddHandler(
-                "GET", 
-                new Tuple<Regex, Func<IDictionary<string, object>, Func<IDictionary<string, object>, Task>, Task>>(
+                "GET",
+                new Tuple<Regex, Func<IDictionary<string, object>, Func<IDictionary<string, object>, Task>, dynamic, Task>>(
                     CreateRegexForUrlPattern(urlPattern), 
                     handler));
         }
@@ -93,33 +108,33 @@ namespace OwinDispatcher
 
         public void Patch(
             string urlPattern,
-            Func<IDictionary<string, object>, Func<IDictionary<string, object>, Task>, Task> handler)
+            Func<IDictionary<string, object>, Func<IDictionary<string, object>, Task>, dynamic, Task> handler)
         {
             AddHandler(
                 "PATCH",
-                new Tuple<Regex, Func<IDictionary<string, object>, Func<IDictionary<string, object>, Task>, Task>>(
+                new Tuple<Regex, Func<IDictionary<string, object>, Func<IDictionary<string, object>, Task>, dynamic, Task>>(
                     CreateRegexForUrlPattern(urlPattern),
                     handler));
         }
 
         public void Post(
             string urlPattern,
-            Func<IDictionary<string, object>, Func<IDictionary<string, object>, Task>, Task> handler)
+            Func<IDictionary<string, object>, Func<IDictionary<string, object>, Task>, dynamic, Task> handler)
         {
             AddHandler(
                 "POST",
-                new Tuple<Regex, Func<IDictionary<string, object>, Func<IDictionary<string, object>, Task>, Task>>(
+                new Tuple<Regex, Func<IDictionary<string, object>, Func<IDictionary<string, object>, Task>, dynamic, Task>>(
                     CreateRegexForUrlPattern(urlPattern),
                     handler));
         }
 
         public void Put(
             string urlPattern,
-            Func<IDictionary<string, object>, Func<IDictionary<string, object>, Task>, Task> handler)
+            Func<IDictionary<string, object>, Func<IDictionary<string, object>, Task>, dynamic, Task> handler)
         {
             AddHandler(
                 "PUT",
-                new Tuple<Regex, Func<IDictionary<string, object>, Func<IDictionary<string, object>, Task>, Task>>(
+                new Tuple<Regex, Func<IDictionary<string, object>, Func<IDictionary<string, object>, Task>, dynamic, Task>>(
                     CreateRegexForUrlPattern(urlPattern),
                     handler));
         }

@@ -25,7 +25,7 @@ namespace TestWebApp
             app.UseDispatcher(dispatcher =>
             {
                 // list all the things:
-                dispatcher.Get("/things", (environment, next) =>
+                dispatcher.Get("/things", (environment, next, @params) =>
                 {
                     var response = new OwinResponse(environment)
                     {
@@ -47,7 +47,7 @@ namespace TestWebApp
                 });
 
                 // create a new thing:
-                dispatcher.Post("/things", async (environment, next) =>
+                dispatcher.Post("/things", async (environment, next, @params) =>
                 {
                     var request = new OwinRequest(environment);
                     var form = await request.ReadFormAsync();
@@ -74,6 +74,26 @@ namespace TestWebApp
                     response.Headers["Location"] = uri;
                     response.ContentType = "text/plain";
                     await response.WriteAsync(uri);
+                });
+
+                // list all the things:
+                dispatcher.Get("/things/{id}", (environment, next, @params) =>
+                {
+                    var response = new OwinResponse(environment);
+
+                    int id;
+                    if (!int.TryParse(@params.id, out id))
+                    {
+                        response.StatusCode = 404;
+                        return Task.FromResult((object)null);
+                    }
+
+                    var thing = _things[id];
+
+                    response.StatusCode = 200;
+                    response.ContentType = "text/plain";
+
+                    return response.WriteAsync(String.Concat("Thing #", thing.Id, " is ", thing.Name, "."));
                 });
             });
         }
