@@ -4,7 +4,7 @@ _OwinDispatcher is a simple OWIN middleware that dispatches requests by associat
 
 ## Installing
 
-Install OwinDispatcher via NuGet: `install-package OwinDispatcher -pre`. Or, download the latest binary distribution from the [available releases](https://github.com/half-ogre/OwinDispatcher/releases).
+Install OwinDispatcher via NuGet: `install-package OwinDispatcher`. Or, download the latest binary distribution from the [available releases](https://github.com/half-ogre/OwinDispatcher/releases).
 
 ## Configuration
 
