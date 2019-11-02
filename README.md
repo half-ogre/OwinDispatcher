@@ -1,3 +1,5 @@
+_**NOTICE! I am no longer maintaining this repository. It has been archived.**_
+
 # OwinDispatcher
 
 _OwinDispatcher is a simple OWIN middleware that dispatches requests by associating URL patterns to handler functions._
